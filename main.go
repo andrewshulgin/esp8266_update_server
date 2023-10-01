@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/md5"
 	"fmt"
+	"github.com/netinternet/remoteaddr"
 	"golang.org/x/mod/semver"
 	"io/ioutil"
 	"log"
@@ -22,6 +23,7 @@ func handler(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(http.StatusBadRequest)
 		return
 	}
+	remoteAddr, _ := remoteaddr.Parse().IP(request)
 	remoteVersion := request.Header.Get("x-ESP8266-version")
 	if remoteVersion == "" {
 		writer.WriteHeader(http.StatusBadRequest)
@@ -36,7 +38,7 @@ func handler(writer http.ResponseWriter, request *http.Request) {
 	firmwareDir := path.Join(FirmwarePath, firmwareName)
 	log.Println(fmt.Sprintf(
 		"Received request %s from %s firmware %s version %s",
-		request.URL, request.RemoteAddr, firmwareName, remoteVersion,
+		request.URL, remoteAddr, firmwareName, remoteVersion,
 	))
 	if info, err := os.Stat(firmwareDir); err != nil || !info.IsDir() {
 		writer.WriteHeader(http.StatusNotFound)
